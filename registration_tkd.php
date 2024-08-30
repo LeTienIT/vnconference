@@ -748,7 +748,7 @@ if (isset($_POST['delegate_firstname'])) {
             }
         });
     });
-
+// New nếu tiếng anh thì bắt buộc nhập 2 field học hàm và chuyên ngành
     document.getElementById('language').addEventListener('change', function() {
         const isChecked = this.checked;
         const elements = document.querySelectorAll('[data-vn]');
