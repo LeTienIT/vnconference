@@ -414,8 +414,8 @@ if (isset($_POST['delegate_firstname'])) {
                     TRONG <span class="bold">DỰ PHÒNG SỐT XUẤT HUYẾT DENGUE</span> TẠI <span class="bold">VIỆT NAM</span>
                 </h1>
 
-                <h3 style="font-weight: normal;"><?= $conference['conferences_duration'] ?></h3>
-                <h3 style="font-weight: normal;"><?= $conference['conferences_location'] ?></h3>
+                <h3 style="font-weight: normal;" data-vn="<?= $conference['conferences_duration'] ?>" data-en=""><?= $conference['conferences_duration'] ?></h3>
+                <h3 style="font-weight: normal;" data-vn="<?= $conference['conferences_location'] ?>" data-en=""><?= $conference['conferences_location'] ?></h3>
             </div>
 
             <div class=" justify-content-center row" id='registration_result'>
@@ -441,19 +441,19 @@ if (isset($_POST['delegate_firstname'])) {
                 if (isset($insert_result)) {
                 ?>
                     <div class="col-12">
-                        <p id="delegate_code" style="background: #fb4472;">Mã cá nhân:<br><?= $_SESSION['delegate_code'] ?></p>
+                        <p id="delegate_code" style="background: #fb4472;" data-vn="Mã cá nhân:<br><?= $_SESSION['delegate_code'] ?>" data-en="">Mã cá nhân:<br><?= $_SESSION['delegate_code'] ?></p>
                         <p id="delegate_password">
                             Password: <?= $_SESSION['delegate_password'] ?><br>
-                            <span>(Dùng để cập nhật thông tin bên dưới nếu có sai lệch)</span>
+                            <span data-vn="(Dùng để cập nhật thông tin bên dưới nếu có sai lệch)" data-en="">(Dùng để cập nhật thông tin bên dưới nếu có sai lệch)</span>
                         </p>
                         <img id="delegate_qr" src="<?= $_SESSION['path_jpg'] ?>" alt="" style="max-width:200px">
                         <div id="delegate_qr_note">
-                            <p>
+                            <p data-vn="Quý đại biểu vui lòng:" data-en="">
                                 Quý đại biểu vui lòng:
                             </p>
                             <ul>
-                                <li>Không chia sẻ mã cá nhân cho người khác.</li>
-                                <li>Mang theo THƯ MỜI GIẤY & MÃ QR CÁ NHÂN khi tham dự hội thảo</li>
+                                <li data-vn="Không chia sẻ mã cá nhân cho người khác." data-en="">Không chia sẻ mã cá nhân cho người khác.</li>
+                                <li data-vn="Mang theo THƯ MỜI GIẤY & MÃ QR CÁ NHÂN khi tham dự hội thảo" data-en="">Mang theo THƯ MỜI GIẤY & MÃ QR CÁ NHÂN khi tham dự hội thảo</li>
                             </ul>
                         </div>
                     </div>
@@ -466,40 +466,40 @@ if (isset($_POST['delegate_firstname'])) {
                     <label for='delegate_title' class="form-label" data-vn="Học hàm/Học vị" data-en="Academic title">Học hàm/Học vị</label>
                     <select name="delegate_title" id="delegate_title" class="form-control-sm form-select">
                         <?php 
-                        $titles = [
-                            "GS. TS. BS.",
-                            "GS. TS. DS.",
-                            "GS. TS.",
-                            "PGS. TS. BS.",
-                            "PGS. TS. DS.",
-                            "PGS. TS.",
-                            "TS. BS.",
-                            "Ths. BS.",
-                            "Ths. BS. CKII.",
-                            "Ths. BS. CKI.",
-                            "BS. CKII.",
-                            "BS. CKI.",
-                            "BS.",
-                            "TS. DS.",
-                            "Ths. DS.",
-                            "Ths. DS. CKII.",
-                            "Ths. DS. CKI.",
-                            "DS. CKII.",
-                            "DS. CKI.",
-                            "DS.",
-                            "Ths. ĐD.",
-                            "Điều dưỡng",
-                            "NVYT.",
-                            "TS.",
-                            "Ths.",
-                            "Ông",
-                            "Bà"
-                        ];
+                            $titles = [
+                                "GS. TS. BS.",
+                                "GS. TS. DS.",
+                                "GS. TS.",
+                                "PGS. TS. BS.",
+                                "PGS. TS. DS.",
+                                "PGS. TS.",
+                                "TS. BS.",
+                                "Ths. BS.",
+                                "Ths. BS. CKII.",
+                                "Ths. BS. CKI.",
+                                "BS. CKII.",
+                                "BS. CKI.",
+                                "BS.",
+                                "TS. DS.",
+                                "Ths. DS.",
+                                "Ths. DS. CKII.",
+                                "Ths. DS. CKI.",
+                                "DS. CKII.",
+                                "DS. CKI.",
+                                "DS.",
+                                "Ths. ĐD.",
+                                "Điều dưỡng",
+                                "NVYT.",
+                                "TS.",
+                                "Ths.",
+                                "Ông",
+                                "Bà"
+                            ];
 
-                        foreach ($titles as $title) {
-                            $selected = isset($delegate_title_update) && $delegate_title_update == $title ? 'selected' : '';
-                            echo "<option value=\"$title\" $selected>$title</option>";
-                        }
+                            foreach ($titles as $title) {
+                                $selected = isset($delegate_title_update) && $delegate_title_update == $title ? 'selected' : '';
+                                echo "<option value=\"$title\" $selected>$title</option>";
+                            }
                         ?>
                         <option value="other">Khác</option>
                     </select>
@@ -769,6 +769,21 @@ if (isset($_POST['delegate_firstname'])) {
                 }
             }
         });
+
+        const handleSelectOptions = (selectElement, isChecked) => {
+            const isChecked = this.checked;
+
+            const delegateTitleSelect = document.getElementById('delegate_title');
+            const delegateMajorSelect = document.getElementById('delegate_major');
+            const options = Array.from(selectElement.options);
+            options.forEach(option => {
+                if (option.value !== 'other') {
+                    option.style.display = isChecked ? 'none' : 'block';
+                }
+            });
+        };
+        handleSelectOptions(delegateTitleSelect, isChecked);
+        handleSelectOptions(delegateMajorSelect, isChecked);
     });
 </script>
 
