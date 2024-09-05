@@ -1,0 +1,21 @@
+1: do lỗi file nào đó trong bench => reset bench
+2: do lỗi về csdl < có thể do không đủ dung lượng >
+[	tail -f logs/web.error.log
+	tail -f logs/web.log
+	sudo tail -f /var/log/nginx/error.log
+	sudo tail -f /var/log/nginx/access.log
+	tail -f worker.error.log
+	tail -f worker.log	]
+=> kiểm tra trạng thái database: sudo systemctl status mariadb
+=> kiểm tra dung lượng đĩa: df -h <lưu ý phần use: 100% = toang>
+=> khợi động lại erp: sudo supervisorctl restart all
+
+=> xóa các tệp không cần
+[ 	sudo find /var/log -type f -name "*.log" -exec rm -f {} \;
+	sudo apt-get autoremove
+	sudo apt-get clean
+	sudo apt-get autoclean
+	sudo rm -rf /tmp/*
+	sudo rm -rf /path/to/backup/files	]
+=> kiểm tra lại df -h => giảm dung lượng = ok
+=> kiểm tra lại database sudo systemctl restart mariadb => không có gì hiện ra là ok

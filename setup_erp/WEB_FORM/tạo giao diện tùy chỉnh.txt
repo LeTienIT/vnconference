@@ -1,0 +1,109 @@
+Có, bạn có thể tùy chỉnh giao diện trên ERPNext. Để thêm một giao diện hiển thị lịch với số lượng dự án cho mỗi ngày, bạn có thể tạo một trang web tùy chỉnh (Custom Page) hoặc một báo cáo tùy chỉnh (Custom Report). Dưới đây là các bước bạn có thể thực hiện:
+
+Tạo một trang web tùy chỉnh:
+
+a. Vào Desk > Developer > Web Form > New Web Form
+b. Đặt tên cho form, ví dụ: "Project Calendar"
+c. Trong phần "Route", đặt một đường dẫn, ví dụ: "project-calendar"
+d. Lưu form
+
+Thêm mã HTML và JavaScript vào form:
+
+a. Trong phần "Client Script" của form, thêm mã JavaScript để tạo lịch và lấy dữ liệu dự án:
+
+JAVASCRIPT
+copy
+frappe.ready(function() {
+    var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'dayGridMonth',
+        events: function(info, successCallback, failureCallback) {
+            frappe.call({
+                method: 'your_custom_app.your_custom_module.get_project_counts',
+                args: {
+                    start: info.startStr,
+                    end: info.endStr
+                },
+                callback: function(r) {
+                    var events = [];
+                    if (r.message) {
+                        r.message.forEach(function(item) {
+                            events.push({
+                                title: item.count + ' Projects',
+                                start: item.date,
+                                allDay: true
+                            });
+                        });
+                    }
+                    successCallback(events);
+                }
+            });
+        }
+    });
+    calendar.render();
+});
+b. Trong phần "HTML" của form, thêm một container cho lịch:
+
+HTML
+copy
+<div id="calendar"></div>
+Tạo một phương thức tùy chỉnh trong Python:
+
+Tạo một file Python mới trong custom app của bạn (ví dụ: your_custom_app/your_custom_module.py) và thêm phương thức sau:
+
+PYTHON
+copy
+import frappe
+from frappe.utils import getdate
+
+@frappe.whitelist()
+def get_project_counts(start, end):
+    projects = frappe.get_all(
+        "Project",
+        filters=[
+            ["expected_start_date", "between", [start, end]]
+        ],
+        fields=["expected_start_date", "name"]
+    )
+    
+    date_counts = {}
+    for project in projects:
+        date = getdate(project.expected_start_date)
+        if date not in date_counts:
+            date_counts[date] = 0
+        date_counts[date] += 1
+    
+    return [{"date": date.isoformat(), "count": count} for date, count in date_counts.items()]
+Thêm các thư viện cần thiết:
+
+Trong phần "Page Header" của Web Form, thêm các liên kết đến thư viện FullCalendar:
+
+HTML
+copy
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js'></script>
+Cấu hình quyền truy cập:
+Đảm bảo rằng người dùng có quyền truy cập vào trang web tùy chỉnh này. Bạn có thể cấu hình điều này trong phần "Permissions" của Web Form.
+
+Tùy chỉnh giao diện (nếu cần):
+Bạn có thể thêm CSS tùy chỉnh vào phần "Style" của Web Form để điều chỉnh giao diện của lịch:
+
+CSS
+copy
+#calendar {
+    max-width: 900px;
+    margin: 0 auto;
+}
+Thêm liên kết đến trang mới:
+Để người dùng có thể dễ dàng truy cập trang mới này, bạn có thể thêm một liên kết vào menu hoặc dashboard. Điều này có thể được thực hiện thông qua cấu hình Desk hoặc bằng cách tùy chỉnh các trang hiện có.
+
+Kiểm tra và triển khai:
+Sau khi hoàn thành các bước trên, hãy kiểm tra trang web tùy chỉnh của bạn để đảm bảo nó hoạt động như mong đợi. Nếu mọi thứ đều ổn, bạn có thể triển khai những thay đổi này lên hệ thống sản xuất.
+
+Lưu ý quan trọng:
+
+Đảm bảo rằng bạn đã tạo và kích hoạt một custom app trong ERPNext để chứa mã tùy chỉnh của bạn.
+Phương thức Python get_project_counts giả định rằng bạn đang sử dụng trường expected_start_date trong DocType Project. Hãy điều chỉnh trường này nếu cần thiết.
+Mã JavaScript sử dụng thư viện FullCalendar. Đảm bảo rằng bạn đã bao gồm các tệp CSS và JS cần thiết.
+Tùy thuộc vào phiên bản ERPNext của bạn, cú pháp có thể hơi khác. Hãy tham khảo tài liệu của phiên bản cụ thể mà bạn đang sử dụng.
+Bằng cách này, bạn có thể tạo một giao diện tùy chỉnh hiển thị lịch với số lượng dự án cho mỗi ngày mà không cần sửa đổi trực tiếp mã nguồn cốt lõi của ERPNext. Thay vào đó, bạn đang mở rộng chức năng thông qua các tính năng tùy chỉnh được cung cấp bởi framework.
+

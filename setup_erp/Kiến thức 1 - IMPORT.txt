@@ -1,0 +1,17 @@
+Series:
+	Sử dụng khi thêm mới: Khi bạn thêm mới một nhân viên từ giao diện của ERPNext, 
+	hệ thống sẽ sử dụng Series để tự động tạo một số thứ tự duy nhất cho nhân viên đó. 
+	Điều này đảm bảo rằng mỗi nhân viên mới sẽ có một mã duy nhất và không trùng lặp.
+	Ví dụ: Nếu bạn đã thiết lập Series cho Employee là "EMP-.YYYY.-", thì hệ thống sẽ tự động sinh ra mã nhân viên như "EMP-2024-001", "EMP-2024-002", vv.
+Employee ID:
+	Sử dụng khi nhập dữ liệu từ file: Khi bạn import dữ liệu từ file (CSV, Excel) vào ERPNext, 
+	bạn sẽ map dữ liệu từ cột "Employee ID" trong file với trường "Employee ID" trong ERPNext. 
+	Điều này cho phép bạn sử dụng các mã nhân viên đã có sẵn trong dữ liệu của mình thay vì tạo mới từ Series.
+	Ví dụ: Nếu trong file của bạn có cột "Employee ID" với các giá trị như "AD2211HAN226", bạn có thể import các nhân viên với các mã này vào ERPNext.
+Ý nghĩa và dữ liệu của nhân viên:
+	Cả hai phương pháp đều có ý nghĩa giống nhau, đó là xác định một nhân viên duy nhất và lưu trữ thông tin của nhân viên đó trong hệ thống ERPNext.
+	Dữ liệu của nhân viên (tên, phòng ban, thông tin liên hệ, vv.) sẽ được lưu trữ và quản lý dựa trên Employee ID hoặc Series tùy thuộc vào cách bạn thực hiện nhập liệu hoặc thêm mới.
+
+!!!!Series không tự động chèn khi import: 
+	Khi bạn import dữ liệu, ERPNext sẽ chỉ sử dụng giá trị được map từ cột ID trong file của bạn. 
+	Nó không tự động tạo hoặc chèn giá trị từ Series vào trường ID nếu bạn không cấu hình để làm như vậy.

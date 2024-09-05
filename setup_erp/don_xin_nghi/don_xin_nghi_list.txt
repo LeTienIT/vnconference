@@ -1,0 +1,88 @@
+frappe.listview_settings['don_xin_nghi'] = {
+    onload: function(listview) {
+        var current_user = frappe.session.user;
+        frappe.call({
+            method: 'frappe.client.get_list',
+            args: {
+                doctype: 'Employee',
+                filters: {
+                    'user_id': current_user
+                },
+                fields: ['name', 'department']
+            },
+            callback: function(response) {
+                if (response.message.length > 0) {
+                    var employee = response.message[0];
+                    var user_department = employee.department;
+                    if(user_department)
+                    {
+                        if(user_department == "[BOD] Ban giám đốc")
+                        {
+                            // setTimeout(function(){
+                                frappe.after_ajax(() =>{
+                                    listview.filter_area.clear();
+                                        // listview.filter_area.add([
+                                        //     ['don_xin_nghi', 'phong_ban', '=', user_department]
+                                        // ]);
+                                    listview.refresh();
+                                        // $('.filter-selector').hide();
+                                });
+                            // }, 2000);
+                            
+                        }
+                        else
+                        {
+                            frappe.call({
+                                method: 'frappe.client.get_list',
+                                args: {
+                                    doctype: 'Department',
+                                    filters: {
+                                        'parent_department': user_department
+                                    },
+                                    fields: ['name']
+                                },
+                                callback: function(department_response) {
+                                    var child_departments = department_response.message.map(function(dept) {
+                                        return dept.name;
+                                    });
+                                    child_departments.push(user_department);
+                                    let child_departments_string = child_departments.join(',');
+                                    console.log(child_departments_string)
+                                    frappe.after_ajax(() => {
+                                        listview.filter_area.clear();
+                                        listview.filter_area.add([
+                                            ['don_xin_nghi','phong_ban', 'in', child_departments_string]
+                                        ]);
+                                        listview.refresh();
+                                        // console.log(child_departments);
+                                        
+                                        // $('.filter-selector').hide();
+                                    });
+                                }
+                            });
+                        }
+                    }
+                    else
+                    {
+                        frappe.after_ajax(() =>{
+                            listview.filter_area.clear();
+                                // listview.filter_area.add([
+                                //     ['don_xin_nghi', 'phong_ban', '=', user_department]
+                                // ]);
+                            listview.refresh();
+                                // $('.filter-selector').hide();
+                        });
+                    }
+                    
+                } else {
+                    frappe.after_ajax(() =>{
+                        listview.filter_area.clear();
+                        listview.refresh();
+                    });
+                }
+            }
+        });
+    }
+};
+
+

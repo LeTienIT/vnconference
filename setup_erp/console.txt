@@ -1,0 +1,4 @@
+bench --site vnc console
+
+from your_app.letien_code import some_function
+      2 print(some_function())

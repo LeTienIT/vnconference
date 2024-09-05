@@ -1,0 +1,7 @@
+vi apps/erpnext/erpnext/setup/doctype/employee/employee.py
+validate_status(self.status, ["Active", "Inactive", "Suspended", "Left", "Nghỉ việc", "Đang làm việc"])
+//để chỉnh sửa nhập i
+//sửa xong nhập esc
+//nhập :wq enter = lưu + thoát
+
+// chú ý. vào frappe_docker-queue-long-1 để sửa. docker exec -it id... /bin/bash

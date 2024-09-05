@@ -1,0 +1,55 @@
+https://github.com/frappe/erpnext
+https://github.com/frappe/frappe_docker
+
+VM:vm-test2
+ip 34.162.165.248
+login: private key
+
+#Install docker + compose:
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+
+#Add user permission to docker:
+sudo groupadd docker
+sudo gpasswd -a $USER docker
+newgrp docker
+
+#clone project:
+git clone https://github.com/frappe/frappe_docker
+cd frappe_docker
+
+#Run command
+docker compose -f pwd.yml up -d
+
+# Check of app accessible from local machine (make sure app running)
+curl -kv http://localhost:8080
+
+# check the backend logs:
+docker logs frappe_docker-backend-1
+- backend error, restart backend:
+docker restart frappe_docker-backend-1
+- backend run ok
+Có thể làm tương tự để fix "frappe_docker-frontend-1" hoặc 1 vài cái khác cho chắc cú
+
+
+- localhost can access app
+- check firewall: vm-test2 use network default
+- allow port 8080 for network default, can allow all ports or port 8080
+
+- access to URL with external IP:
+http://34.162.165.248:8080
+- Login
+username: Administrator, password: admin
+- OK
+
+bench get-app hrms
+bench --site frontend install-app hrms
+
+=> error như bước cài đặt => fix "Internal Server Error"
+
+bench --site frontend uninstall-app hrms
+bench --site frontend install-app hrms
+
+## ssh2
+docker logs frappe_docker-backend-1
+docker restart frappe_docker-backend-1

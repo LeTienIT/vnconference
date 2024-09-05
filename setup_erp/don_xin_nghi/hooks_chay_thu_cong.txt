@@ -1,0 +1,5 @@
+# Chạy hàm update_years_of_service_and_age ngay lập tức
+bench execute erpnext.letien_code.update_years_of_service_and_age --site your_site_name
+
+# Chạy hàm update_month_of_service ngay lập tức
+bench execute erpnext.letien_code.update_month_of_service --site your_site_name

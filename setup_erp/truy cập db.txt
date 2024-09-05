@@ -1,0 +1,11 @@
+mysql -u root -p
+letien2k2
+USE _a0968608bac186bd; // đợi
+SHOW TABLES;
+SHOW COLUMNS FROM tabEmployee;
+SELECT COUNT(*) FROM tabEmployee; //Thực hiện SQL
+
+
+SELECT DATE(expected_start_date) as date, COUNT(*) as count FROM `tabProject` GROUP BY DATE(expected_start_date);
+
+SELECT COUNT(*) as count, DATE(expected_start_date) as date FROM `tabProject` WHERE expected_start_date BETWEEN %s AND %s GROUP BY DATE(expected_start_date)

@@ -1,0 +1,26 @@
+docker exec -it frappe_docker-backend-1 /bin/bash
+
+cd ~/frappe-bench/sites
+
+ls
+
+bench --site <YOUR_SITE> console
+
+print(frappe.local.flags.error_log)
+
+bench --site <YOUR_SITE> install-app hrms
+
+bench update --upgrade
+
+bench use frontend
+bench get-app hrms
+bench install-app hrms
+
+docker-compose restart
+
+sudo apt update
+sudo apt install docker-compose
+
+bench uninstall-app hrms
+
+bench get-app hrms https://github.com/frappe/hrms.git

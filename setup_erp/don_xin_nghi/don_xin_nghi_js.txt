@@ -1,0 +1,194 @@
+frappe.ui.form.on('don_xin_nghi', {
+    onload: function(frm) {
+        if (frm.is_new()) {
+            
+            frappe.call({
+                method: 'frappe.client.get',
+                args: {
+                    doctype: 'Employee',
+                    filters: {
+                        user_id: frappe.session.user
+                    }
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        // console.log(r.message);
+                        frm.set_value('ma_nhan_vien', r.message.employee);
+                        frm.set_value('ten_nhan_vien', r.message.employee_name);
+                        frm.set_value('chuc_vu',r.message.custom_chức_vụ);
+                        frm.set_value('phong_ban', r.message.department);
+                        frm.set_value('cong_ty',r.message.company);
+                        frm.set_value('so_ngay_phep',r.message.custom_nghỉ_phép_năm);
+                    }
+                }
+            });
+            
+        }
+        else{
+            if (frm.doc.workflow_state === 'Pending TP') {
+                check_department(frm);
+            }            
+        }
+    },
+    refresh: function(frm){
+        if (frm.doc.workflow_state === 'Pending TP') {
+            check_department(frm);
+        }
+    },
+    before_workflow_action: function(frm) {
+        if (!frm.is_new()) {
+            if(frm.doc.tính_phép){
+                if (frm.selected_workflow_action === "Approve") {
+                    let ma_nhan_vien = frm.doc.ma_nhan_vien;
+                    let tong_so_ngay_nghi = frm.doc.tong_so_ngay_nghi;
+        
+                    if (ma_nhan_vien && tong_so_ngay_nghi) {
+                        
+                        frappe.call({
+                            method: 'erpnext.letien_code.update_leave_balance', 
+                            args: {
+                                ma_nhan_vien: ma_nhan_vien,
+                                leave_days: tong_so_ngay_nghi
+                            },
+                            callback: function(response) {
+                                if (response.message && response.message.status === 'success') {
+                                    frappe.msgprint(__('Updated custom_nghỉ_phép_năm successfully'));
+                                } else {
+                                    frappe.msgprint(__('Error: ' + response.message.message));
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            
+        }
+    },
+	ly_do: function(frm) {
+        if (frm.doc.ly_do === 'Nghỉ không lương') {
+            frm.set_value('cham_cong', 'Không');
+        } else {
+            frm.set_value('cham_cong', 'Có');
+        }
+    },
+    
+});
+function check_department(frm) {
+    // Lấy thông tin user hiện tại
+    frappe.call({
+        method: 'frappe.client.get',
+        args: {
+            doctype: 'Employee',
+            filters: {
+                user_id: frappe.session.user
+            }
+        },
+        callback: function(response) {
+            if (response.message) {
+                var user_department = response.message.department;
+
+                // Lấy thông tin phòng ban từ đơn nghỉ phép
+                var leave_application_department = frm.doc.phong_ban;
+
+                if(leave_application_department == user_department)
+                {
+                    frm.page.show_actions_menu();
+                }
+                else
+                {
+                    frappe.call({
+                        method: 'frappe.client.get_list',
+                        args: {
+                            doctype: 'Department',
+                            fields: ['name'],
+                            filters: {
+                                parent_department: user_department
+                            }
+                        },
+                        callback: function(sub_depts_response) {
+                            if (sub_depts_response.message) {
+                                var sub_departments = sub_depts_response.message.map(function(dept) {
+                                    return dept.name;
+                                });
+                                // console.log(sub_departments,leave_application_department,!sub_departments.includes(leave_application_department))
+                                if (!sub_departments.includes(leave_application_department)) {
+                                    frm.page.clear_actions_menu();
+                                }
+                                else
+                                {
+                                    frm.page.show_actions_menu();
+                                }
+                            }
+                        },
+                        error: function(error) {
+                            frappe.msgprint(__('Đã xảy ra lỗi khi lấy thông tin các phòng ban con: ') + error.message);
+                        }
+                    }); 
+                }
+                
+            } else {
+                frappe.msgprint(__('Không thể lấy thông tin phòng ban của user hiện tại. Vui lòng kiểm tra quyền truy cập.'));
+            }
+        },
+        error: function(error) {
+            frappe.msgprint(__('Đã xảy ra lỗi khi lấy thông tin user: ') + error.message);
+        }
+    });
+}
+
+frappe.ui.form.on('child_table_ngay_nghi', { 
+    ngay_bat_dau_nghi: function(frm, cdt, cdn) {
+        calculate_total_days(frm, cdt, cdn);
+    },
+    ngay_ket_thuc_nghi: function(frm, cdt, cdn) {
+        calculate_total_days(frm, cdt, cdn);
+    }
+});
+
+function calculate_total_days(frm, cdt, cdn) {
+    let row = locals[cdt][cdn];
+    if (row.ngay_bat_dau_nghi && row.ngay_ket_thuc_nghi) {
+        frappe.call({
+            method: 'frappe.client.get_value',
+            args: {
+                doctype: 'Company',
+                filters: { name: frm.doc.cong_ty },
+                fieldname: 'default_holiday_list'
+            },
+            callback: function(r) {
+                if (r.message && r.message.default_holiday_list) {
+                    frappe.call({
+                        method: "frappe.client.get",
+                        args: {
+                            doctype: "Holiday List",
+                            name: r.message.default_holiday_list
+                        },
+                        callback: function(r) {
+                            if(r.message) {
+                                let allHolidays = r.message.holidays;
+                                let start = frappe.datetime.str_to_obj(row.ngay_bat_dau_nghi);
+                                let end = frappe.datetime.str_to_obj(row.ngay_ket_thuc_nghi);
+                                
+                                // Lọc ra các ngày nghỉ nằm trong khoảng thời gian
+                                let holidays = allHolidays.filter(holiday => {
+                                    let holidayDate = frappe.datetime.str_to_obj(holiday.holiday_date);
+                                    return holidayDate >= start && holidayDate <= end;
+                                });
+                                
+                                // console.table("Danh sách ngày nghỉ lễ trong khoảng thời gian:", holidays);
+
+                                // Tính số ngày nghỉ (không tính ngày lễ)
+                                let totalDays = frappe.datetime.get_day_diff(row.ngay_ket_thuc_nghi, row.ngay_bat_dau_nghi) + 1;
+                                let workingDays = totalDays - holidays.length;
+                                frm.set_value('so_ngay_xin',totalDays);
+                                frm.set_value('tong_so_ngay_nghi', workingDays);
+                                if(holidays.length != 0)
+                                    frm.set_value('nghi_le_trong_thoi_gian',holidays.length)
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+}

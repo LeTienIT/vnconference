@@ -1,0 +1,19 @@
+docker exec -it 6ddc8130db98 /bin/bash
+//Thay thế 6ddc8130db98 bằng CONTAINER ID cần.
+//ở đây tiến hành cài đặt trong 3 cái
+1: frappe_docker-backend-1
+2: frappe_docker-queue-long-1
+3: frappe_docker-queue-short-1
+
+b1: docker exec -it frappe_docker-backend-1 /bin/bash
+b2: bench get-app hrms
+b3: cd vào site cần (frontend) bench --site frontend install-app hrms
+b4: bench --site frontend list-apps
+b5: bench migrate --skip-failing
+b6: exit để ra ngoài
+
+b7: reset các container: docker restart $(docker ps -q)
+
+b8: thực hiện bench get-app hrms với 2 cái còn lại.
+	- Mỗi cái đều migrate.
+	- reset container.
