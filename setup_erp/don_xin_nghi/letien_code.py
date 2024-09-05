@@ -8,6 +8,8 @@
 import frappe
 from datetime import datetime
 
+
+# Cập nhật hằng năm, tự động tăng tuổi + thâm niên + reset ngày nghỉ năm về 0
 def update_years_of_service():
     employees = frappe.get_all('Employee', fields=['name', 'custom_ngày_ký_hđlđ_chính_thức','custom_số_tuổi','custom_nghỉ_phép_năm'])
     current_date = datetime.now()
@@ -27,15 +29,17 @@ def update_years_of_service():
             
     frappe.db.commit() 
 
+# Cập nhật hàng tháng tự động tăng ngày nghỉ hằng năm lên +1 sau mỗi tháng <Đẫ test console ok>
 def update_month_of_service():
     employees = frappe.get_all('Employee', fields=['name', 'custom_nghỉ_phép_năm'])
     for emp in employees:
         if emp.custom_nghỉ_phép_năm is not None:
             new_ngay_nghi = int(emp.custom_nghỉ_phép_năm) + 1
-            frappe.db.set_value('Employee', emp.name, 'custom_ngày_nghi_phép',new_ngay_nghi)
+            frappe.db.set_value('Employee', emp.name, 'custom_nghỉ_phép_năm',new_ngay_nghi)
             
     frappe.db.commit() 
     
+# API CALL tự đông trừ đi ngày nghỉ nếu tính phép
 @frappe.whitelist()
 def update_leave_balance(ma_nhan_vien, leave_days):
     try:
@@ -56,6 +60,17 @@ def update_leave_balance(ma_nhan_vien, leave_days):
     except Exception as e:
         return {"status": "error", "message": str(e)}
     
+# Tự động cập nhật projject code cho tương đống với mã project pr
 def replace_proj_code(doc,method):
     if (doc.custom_project_code and doc.custom_project_code.startswith('PROJ-####')):
         doc.custom_project_code = doc.custom_project_code.replace('PROJ-####',doc.name)
+
+# Tự động cập nhật chuyển rạng thái của projject từ đang làm sang quá hạn khi ngày kết thúc < ngyaf hiện tại <test console OK>
+def update_overdue_projects():
+    today = nowdate();
+    overdue_projects = frappe.get_all('Project', filters={'expected_end_date': ('<', today), 'workflow_state':'Pending'})
+    for project in overdue_projects:
+        project_doc = frappe.get_doc('Project', project.name)
+        if project_doc.workflow_state != 'Overdue':
+            project_doc.workflow_state = 'Overdue';project_doc.save(ignore_permissions=True);
+            frappe.db.commit();

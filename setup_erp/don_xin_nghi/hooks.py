@@ -431,6 +431,7 @@ scheduler_events = {
                 "erpnext.accounts.utils.auto_create_exchange_rate_revaluation_daily",
                 "erpnext.accounts.utils.run_ledger_health_checks",
                 "erpnext.assets.doctype.asset_maintenance_log.asset_maintenance_log.update_asset_maintenance_log_status",
+                "erpnext.letien_code.update_overdue_projects",
         ],
         "weekly": [
                 "erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",
